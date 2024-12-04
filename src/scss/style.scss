@@ -1,0 +1,22 @@
+body {
+    margin: 0px;
+    padding: 0px;
+}
+
+$primary-color: hsl(0, 0%, 17%);
+$secondary-color: hsl(0, 0%, 59%);
+
+.top-component {
+    min-height: 30vh;
+    background-repeat: none;
+    background-size: cover;
+    background-position: center;
+    @media (min-width: 1200px) {
+        background-image: url('../assets/images/pattern-bg-desktop.png');
+    }
+    background-image: url('../assets/images/pattern-bg-mobile.png');
+}
+
+.width-control {
+    width: 50%;
+}
