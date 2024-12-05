@@ -1,0 +1,168 @@
+Input
+
+import { useEffect } from "react";
+import axios from "axios";
+
+const Input = ({ ipAddress, setIpAddress, fetchLocationData }) => {
+  
+  // Automatically detect the user's IP address on component mount
+  useEffect(() => {
+    const getUserIpAddress = async () => {
+      try {
+        const ipResponse = await axios.get("https://api.ipify.org?format=json");
+        const detectedIp = ipResponse.data.ip;
+        setIpAddress(detectedIp); // Set the detected IP to state
+        fetchLocationData(detectedIp); // Fetch location data for the detected IP
+      } catch (err) {
+        console.error("Error detecting IP address:", err);
+      }
+    };
+
+    getUserIpAddress(); // Call the function to detect IP when the component mounts
+  }, []); // Empty dependency array ensures this runs only once when the component mounts
+
+  const handleInputChange = (e) => {
+    setIpAddress(e.target.value); // Update the IP address in state when the user types
+  };
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    if (ipAddress) {
+      fetchLocationData(ipAddress); // Trigger the data fetch
+    } else {
+      alert("Please enter a valid IP address or domain.");
+    }
+  };
+
+  return (
+    <div className="d-flex flex-column">
+      <h2 className="text-center text-white mb-3 mb-md-4">IP Address Tracker</h2>
+      <form onSubmit={handleFormSubmit}>
+        <div className="row justify-content-center g-0">
+          <div className="col-md-4">
+            <div className="bg-white rounded-2 form-control d-flex justify-content-between">
+              <input
+                className="bg-transparent border-0 flex-grow-1"
+                id="ipAddress"
+                type="text"
+                placeholder="Search for any IP address or domain"
+                value={ipAddress} // Bind input value to state
+                onChange={handleInputChange} // Update state on change
+              />
+              <button className="btn btn-primary" type="submit">Search</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default Input;
+
+App
+
+import { useEffect, useState } from "react";
+import Input from "./components/Input"
+import MapComponent from "./components/MapComponent";
+import Output from "./components/Output"
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import axios from "axios";
+
+function App() {
+
+  const [ipAddress, setIpAddress] = useState('');
+  const [locationData, setLocationData] = useState(null);
+  const [error, setError] = useState(null);
+
+  const fetchLocationData = async (ipAddress) => {
+    const apiKey = import.meta.env.VITE_REACT_APP_MAP_API_KEY;
+    const url = `https://geo.ipify.org/api/v2/country,city?apiKey=${apiKey}&ipAddress=${ipAddress}`;
+
+    try {
+      const response = await axios.get(url);
+      setLocationData(response.data);
+      setError(null); // Clear previous errors
+    } catch (err) {
+      console.error("Error fetching IP data:", err);
+      setError("Failed to fetch location data. Please check the IP address.");
+    }
+  };
+  
+    useEffect(() => {
+    if (ipAddress) {fetchLocationData(ipAddress)};
+  }, [ipAddress]);
+  
+
+  return (
+    <div className="d-flex flex-column h-100">
+      <div className="top-component py-5">
+        <div className="container h-100">
+          <div className="h-100">
+            <Input ipAddress={ipAddress} setIpAddress={setIpAddress} fetchLocationData={fetchLocationData}/>
+            <Output/>
+          </div>
+        </div>
+      </div>
+      <div className="map-component h-100 overflow-hidden">
+        <MapComponent locationData={locationData}/>
+      </div>
+    </div>
+  )
+}
+
+export default App
+
+MapComponent
+
+import { useEffect, useRef } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+const MapComponent = ({ locationData }) => {
+  const mapRef = useRef(null); // Store map instance
+  const markerRef = useRef(null); // Store marker instance
+
+  useEffect(() => {
+    // Set default location (India) if no location data is available
+    const defaultLocation = { lat: 20.5937, lng: 78.9629 };
+
+    // Initialize the map only once
+    if (!mapRef.current) {
+      mapRef.current = L.map("map").setView(defaultLocation, 5); // Set to India by default
+
+      // Add a tile layer
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(mapRef.current);
+    }
+
+    // Update the map's view and marker when locationData changes
+    if (locationData && locationData.location) {
+      const { lat, lng } = locationData.location;
+
+      // Update the map's view to the new location
+      mapRef.current.setView([lat, lng], 13);
+
+      // If the marker doesn't exist, create it. Otherwise, update its position
+      if (!markerRef.current) {
+        markerRef.current = L.marker([lat, lng]).addTo(mapRef.current);
+      } else {
+        markerRef.current.setLatLng([lat, lng]);
+      }
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null; // Reset the ref
+      }
+    };
+  }, [locationData]); // Re-run the effect when locationData changes
+
+  return <div id="map" className="map h-100"></div>;
+};
+
+export default MapComponent;

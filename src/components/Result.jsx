@@ -1,10 +1,10 @@
 import React from 'react'
 
-const Result = () => {
+const Result = ({label,dataItem,type}) => {
   return (
     <>
-      <p className='fs-6 fw-bold text-uppercase mb-2 text-secondary'>Ip Address</p>
-      <p className='fs-4 fw-semibold'>198.111.88.3</p>
+      <p className='text-secondary-size text-control fw-bold text-uppercase mb-0 text-secondary'>{label}</p>
+      <p className='text-primary-size text-control fw-semibold mb-0'>{type} {dataItem}</p>
     </>
   )
 }
