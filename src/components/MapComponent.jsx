@@ -24,7 +24,7 @@ const MapComponent = ({ locationData }) => {
   
       // Define a custom icon
       const customIcon = L.icon({
-        iconUrl: '/src/assets/images/icon-location.svg', // Replace with the path to your custom icon
+        iconUrl: '/images/icon-location.svg',
         iconSize: [29, 38], // Set size of the icon
         iconAnchor: [16, 32], // Anchor the icon to the marker's position
         popupAnchor: [0, -32], // Optional: Adjust popup position
