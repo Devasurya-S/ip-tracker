@@ -17,7 +17,7 @@ const Input = ({ handleFormSubmit, searchIp, setSearchIp }) => {
                 value={searchIp}
                 onChange={(e) => setSearchIp(e.target.value)}
               />
-              <button className="btn text-primary-size rounded-0 rounded-end" type="submit">
+              <button className="btn text-primary-size rounded-0 rounded-end border-0" type="submit">
                 <i className="bi bi-search"></i>
               </button>
             </div>

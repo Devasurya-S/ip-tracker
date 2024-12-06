@@ -10,32 +10,38 @@ const MapComponent = ({ locationData }) => {
   useEffect(() => {
     const { location } = locationData;
     const { lat, lng } = location || {};
-
+  
     if (lat && lng) {
       // Initialize the map if it hasn't been initialized yet
       if (!mapInstance.current) {
-        // Initialize map and set the view
         mapInstance.current = L.map(mapRef.current).setView([lat, lng], 15);
-
-        // Add tile layer to the map
+  
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution:
             '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         }).addTo(mapInstance.current);
       }
-
-      // If the marker is not initialized, add it
+  
+      // Define a custom icon
+      const customIcon = L.icon({
+        iconUrl: 'src/assets/images/icon-location.svg', // Replace with the path to your custom icon
+        iconSize: [29, 38], // Set size of the icon
+        iconAnchor: [16, 32], // Anchor the icon to the marker's position
+        popupAnchor: [0, -32], // Optional: Adjust popup position
+      });
+  
+      // If the marker is not initialized, add it with the custom icon
       if (!markerRef.current) {
-        markerRef.current = L.marker([lat, lng]).addTo(mapInstance.current);
+        markerRef.current = L.marker([lat, lng], { icon: customIcon }).addTo(mapInstance.current);
       } else {
-        // Update the marker's position if the map already has a marker
+        // Update the marker's position and icon if the map already has a marker
         markerRef.current.setLatLng([lat, lng]);
+        markerRef.current.setIcon(customIcon);
       }
-
-      // Update map view when location changes
-      mapInstance.current.setView([lat, lng], 15); // Update map center to new location and zoom level
+  
+      mapInstance.current.setView([lat, lng], 15);
     }
-  }, [locationData]); // Re-run whenever locationData changes
+  }, [locationData]);
 
   return <div id="map" className="map h-100 z-2" ref={mapRef}></div>;
 };
